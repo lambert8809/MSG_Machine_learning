@@ -54,12 +54,19 @@ def derivative_u_x(us,xs):
     M_x = tf.gradients(us, xs)[0]
     return M_x
 
+def L2Regluarize(weights):
+    lossL1_temp = 0
+    for i in range(len(weights)):
+        #print("L2" + str(weights[i]))
+        L2_reg = lossL1_temp + tf.nn.l2_loss(weights[i])
+    return L2_reg
+
 #layers = [1, 5, 5, 5,1]
-layers = [1, 50, 1]
+layers = [1, 40, 1]
 #layers2 =[1,40, 40, 40, 1]
-layers2 =[1,40, 40, 40, 1]
+layers2 =[1,10,10, 1]
 #layers = [1, 400, 400, 200, 200, 100, 1]
-data = pd.read_csv('Data2.csv')
+data = pd.read_csv('Data2_normal.csv')
 x = data['x'].values
 u = data['u_mm'].values
 m = data['M'].values
@@ -70,6 +77,7 @@ u = u * 100
 m = m
 # Take training and testing data from the database 
 n=2
+beta = 0.01
 x_train0 = x[::n]
 u_train0 = u[::n]
 m_train0 = m[::n]
@@ -107,13 +115,22 @@ M_xx = derivative_M(m_pred,x_u)
 M_x = derivative_M1(m_pred,x_u)
 #u_pred2 = (x_u+1)*u_pred+(x_u-1)*u_pred
 # Prototype "loss = tf.reduce_mean(tf.square(u - u_pred)+tf.square(m-m_pred))"
-l1 = tf.reduce_mean(tf.square(u - u_pred))
+
+#var, val = zip(vars)
+# loss1L2 = 0
+# for i in range(len(weights)):
+#     loss1L2 = loss1L2 + tf.nn.l2_loss(weights[i])
+
+loss1L2 = L2Regluarize(weights)*0.001
+#l1 = tf.reduce_mean(tf.square(u - u_pred))
+l1 = tf.reduce_mean(tf.square(u - u_pred) + loss1L2)
+
 l2 =  tf.reduce_mean(tf.square(m-m_pred))
 #loss = tf.reduce_mean(tf.square(u - u_pred)+tf.square(m-m_pred))
 #loss = tf.reduce_mean(tf.square(u - u_pred))
 #loss = tf.reduce_mean(tf.square(m-m_pred))
 
-optimizer = tf.train.AdamOptimizer(learning_rate=0.001)
+optimizer = tf.train.AdamOptimizer(learning_rate=0.01)
 
 train_op1 = optimizer.minimize(l1)
 train_op2 = optimizer.minimize(l2)
@@ -121,26 +138,39 @@ train_op2 = optimizer.minimize(l2)
 loss1 = 10
 init = tf.global_variables_initializer()
 num_steps = 1000
+layer1_len = len(layers)
 pre_value=[]
 with tf.Session() as sess:
     sess.run(init)
-    for step in range(1, num_steps*40+1):
+    for step in range(1, num_steps*100+1):
         if loss1 < 0.2:
             exit
         else:
             rand_index = np.random.choice(5000)
             rand_x = [x_train[rand_index]]
             rand_u = [u_train[rand_index]]
+
+            # temp = sess.run(loss1L2)
+            # print ("Step " + str(step)+ " loss1L2: " + str(temp))
+
+            # for i in range(len(weights_temp)):
+            #     print(sess.run(tf.nn.l2_loss(weights_temp[i])))
+            
             sess.run(train_op1, feed_dict={x_u: rand_x, u: rand_u, m: m_train})
             
+            #print (sess.run(weights))
             if step % 100 == 0 or step == 1:
+
                 #loss_temp = sess.run(loss, feed_dict={x_u: x_train, u: u_train, m: m_train})
                 loss1 = sess.run(l1, feed_dict={x_u: x_train, u: u_train, m: m_train})
+                #lossL1 = sess.run(lossL1)
 
                 #w_sum = sess.run(tf.reduce_mean(weights[step]))
 
                 #print ("Step " + str(step)+ ": " + str(loss_temp))
                 print ("Step " + str(step)+ " loss1: " + str(loss1))
+                # print ("Step " + str(step)+ " lossL1: " + str(lossL1_temp))
+                #print ("Step " + str(step)+ " vars: " + str(vars_temp))
     pre_value = sess.run(u_pred, {x_u: x_test})
     pre_value_test = sess.run(u_pred, {x_u: x_train})
     pre_value_u_xx = sess.run(u_xx, {x_u: x_test})
