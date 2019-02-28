@@ -53,13 +53,19 @@ def derivative_M1(Ms,xs):
 def derivative_u_x(us,xs):
     M_x = tf.gradients(us, xs)[0]
     return M_x
+def L2Regluarize(weights):
+    L2_temp = 0
+    for i in range(len(weights)):
+        #print("L2" + str(weights[i]))
+        L2_reg = L2_temp + tf.nn.l2_loss(weights[i])
+    return L2_reg
 
 #layers = [1, 5, 5, 5,1]
-layers = [1, 50, 1] 
+layers = [1, 40, 1] 
 #layers2 =[1,40, 40, 40, 1]
 layers2 =[1,40, 40, 40, 1]
 #layers = [1, 400, 400, 200, 200, 100, 1]
-data = pd.read_csv('Data2.csv')
+data = pd.read_csv('Data2_normal.csv')
 x = data['x'].values
 u = data['u_mm'].values
 m = data['M'].values
@@ -107,13 +113,16 @@ M_xx = derivative_M(m_pred,x_u)
 M_x = derivative_M1(m_pred,x_u)
 #u_pred2 = (x_u+1)*u_pred+(x_u-1)*u_pred
 # Prototype "loss = tf.reduce_mean(tf.square(u - u_pred)+tf.square(m-m_pred))"
-l1 = tf.reduce_mean(tf.square(u - u_pred))
+
+lossL2 = L2Regluarize(weights)*0.002
+
+l1 = tf.reduce_mean(tf.square(u - u_pred) + lossL2)
 l2 =  tf.reduce_mean(tf.square(m-m_pred))
 #loss = tf.reduce_mean(tf.square(u - u_pred)+tf.square(m-m_pred))
 #loss = tf.reduce_mean(tf.square(u - u_pred))
 #loss = tf.reduce_mean(tf.square(m-m_pred))
 
-optimizer = tf.train.AdamOptimizer(learning_rate=0.01)
+optimizer = tf.train.AdamOptimizer(learning_rate=0.02)
 
 train_op1 = optimizer.minimize(l1)
 train_op2 = optimizer.minimize(l2)
@@ -123,13 +132,13 @@ init = tf.global_variables_initializer()
 
 num_steps = 1000
 loss1 = 10
-batch_size = 200
+batch_size = 500
 
 pre_value=[]
 with tf.Session() as sess:
     sess.run(init)
     for step in range(1, num_steps*40+1):
-        if loss1 < 0.01:
+        if loss1 < 0.02:
             exit
         else:
             rand_index = np.random.choice(len(x_train), size=batch_size)
@@ -182,6 +191,7 @@ f1 = plt.figure()
 f5 = plt.figure()
 f6 = plt.figure()
 ax1 = f1.add_subplot(111)
+ax1.set_title('Comparison')
 ax1.plot(x_test[:], pre_value[:], 'r-')
 ax1.plot(x_test[:], u_test[:], 'b+')
 # ax2 = f2.add_subplot(111)
@@ -191,10 +201,12 @@ ax1.plot(x_test[:], u_test[:], 'b+')
 # ax3.plot(x_test[:], pre_value3[:], 'r-')
 # ax4 = f4.add_subplot(111)
 # ax4.plot(x_test[:], pre_value4[:], 'r-')
-ax5 = f5.add_subplot(111)
-ax5.plot(x_test[:], pre_value_u_xx[:], 'r-')
 ax6 = f6.add_subplot(111)
+ax6.set_title('1st Order Differentiation')
 ax6.plot(x_test[:], pre_value_u_x[:], 'r-')
+ax5 = f5.add_subplot(111)
+ax5.set_title('2nd Order Differentiation')
+ax5.plot(x_test[:], pre_value_u_xx[:], 'r-')
 plt.show()
 
 '''
