@@ -24,16 +24,19 @@ def load_data(sample_size):
     L = 10
     for i in range(len(trainD)):
         # multiply 1000 to convert m to mm
-        trainL[i,0] = -1000*trainD[i,1]*L**4/24/Ei*(trainD[i,0]/L-trainD[i,0]**2/L**2)**2      
-        trainL[i,1] = -trainD[i,1]*(L**2-6*L*trainD[i,0]+6*trainD[i,0]**2)/12/Ei
+        trainL[i,0] = -1000*trainD[i,1]*L**4/24/Ei*(trainD[i,0]/L-trainD[i,0]**2/L**2)**2    
+        # multiply 1000 to convert the similar order of u    
+        trainL[i,1] = -1000*trainD[i,1]*(L**2-6*L*trainD[i,0]+6*trainD[i,0]**2)/12/Ei
     for i in range(len(validateD)):
         # multiply 1000 to convert m to mm
-        validateL[i,0] = -1000*validateD[i,1]*L**4/24/Ei*(validateD[i,0]/L-validateD[i,0]**2/L**2)**2      
-        validateL[i,1] = -validateD[i,1]*(L**2-6*L*validateD[i,0]+6*validateD[i,0]**2)/12/Ei
+        validateL[i,0] = -1000*validateD[i,1]*L**4/24/Ei*(validateD[i,0]/L-validateD[i,0]**2/L**2)**2  
+        # multiply 1000 to convert the similar order of u   
+        validateL[i,1] = -1000*validateD[i,1]*(L**2-6*L*validateD[i,0]+6*validateD[i,0]**2)/12/Ei
     for i in range(len(testD)):
         # multiply 1000 to convert m to mm
-        testL[i,0] = -1000*testD[i,1]*L**4/24/Ei*(testD[i,0]/L-testD[i,0]**2/L**2)**2      
-        testL[i,1] = -testD[i,1]*(L**2-6*L*testD[i,0]+6*testD[i,0]**2)/12/Ei
+        testL[i,0] = -1000*testD[i,1]*L**4/24/Ei*(testD[i,0]/L-testD[i,0]**2/L**2)**2   
+        # multiply 1000 to convert the similar order of u     
+        testL[i,1] = -1000*testD[i,1]*(L**2-6*L*testD[i,0]+6*testD[i,0]**2)/12/Ei
     return trainD, validateD, testD, trainL, validateL, testL
 
 if __name__ == "__main__":
