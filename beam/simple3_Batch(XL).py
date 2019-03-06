@@ -97,9 +97,9 @@ loss_temp = tf.reduce_sum(tf.square(output - pred))
 lossL2 = L2Regluarize(weights)*0.002
 #+ loss_constraint
 
-#+ 0.002*loss_constraint
+#
 
-l1 = tf.reduce_mean(tf.square(output - pred) + lossL2 )
+l1 = tf.reduce_mean(tf.square(output - pred) + lossL2 + 0.0004*loss_constraint )
 #l2 =  tf.reduce_mean(tf.square(m-m_pred))
 #loss = tf.reduce_mean(tf.square(u - u_pred)+tf.square(m-m_pred))
 #loss = tf.reduce_mean(tf.square(u - u_pred))
@@ -151,7 +151,7 @@ with tf.Session() as sess:
 
                 print ("Step " + str(step)+ " loss1: " + str(loss1))
 
-                # print ("Step " + str(step)+ " loss_constraint_temp: " + str(loss_constraint_temp))
+                print ("Step " + str(step)+ " loss_constraint_temp: " + str(loss_constraint_temp))
                 # print ("Step " + str(step)+ " loss_temp_temp: " + str(loss_temp_temp))
                 # #print ("Step " + str(step)+ " pred_temp: " + str(pred_temp))
                 # #print ("Step " + str(step)+ " u_temp: " + str(u_temp))
@@ -162,15 +162,19 @@ with tf.Session() as sess:
                 #print(tf.DType(input_0))
     pre_value = sess.run(pred, {input_0: testD})
 
+x_plot1 = np.arange(-0.5, 0.1, 0.01)
+x_plot2 = np.arange(-0.15, 0.1, 0.01)
+
 f1 = plt.figure()
 ax1 = f1.add_subplot(111)
-#ax1.plot(y,x,)
+ax1.plot(x_plot1,x_plot1, color='black')
 ax1.scatter(pre_value[:,0], testL[:,0],label="Predict u vs True u")
 ax1.legend()
 ax1.set_xlabel('predict data')
 ax1.set_ylabel('test data')
 f2 = plt.figure()
 ax2 = f2.add_subplot(111)
+ax2.plot(x_plot2,x_plot2, color='black')
 ax2.scatter(pre_value[:,1], testL[:,1],label="Predict k vs True k")
 ax2.legend()
 ax2.set_xlabel('predict data')
