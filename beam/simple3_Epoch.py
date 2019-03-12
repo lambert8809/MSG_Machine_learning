@@ -101,7 +101,7 @@ lossL2_2 = L2Regluarize(weights2)*0.002
 #+ 0.0002*loss_constraint
 
 l1 = tf.reduce_mean(tf.square(output - pred) + lossL2)
-l2 = tf.reduce_mean(tf.square(output - pred2) + lossL2_2+ 0.0002*loss_constraint)
+l2 = tf.reduce_mean(tf.square(output - pred2) + lossL2_2+ 0.0003*loss_constraint)
 
 #l2 =  tf.reduce_mean(tf.square(m-m_pred))
 #loss = tf.reduce_mean(tf.square(u - u_pred)+tf.square(m-m_pred))
@@ -116,10 +116,9 @@ train_op2 = optimizer.minimize(l2)
 
 init = tf.global_variables_initializer()
 
-num_steps = 1000
 loss1 = 10
 loss2 = 10
-loss_terminate = 2
+loss_terminate = 0.002
 #batch_size = 50
 
 epochs = 300
@@ -143,7 +142,7 @@ with tf.Session() as sess:
                     loss1 = sess.run(l1, feed_dict={input_0: mini_batch_x, output: mini_batch_u})
                     print ("epoch " + str(epoch)+ " loss1: " + str(loss1))
 
-        pre_value = sess.run(pred, {input_0: testD})
+    pre_value = sess.run(pred, {input_0: testD})
 with tf.Session() as sess:
     sess.run(init)
     for epoch in range(epochs):
@@ -159,7 +158,7 @@ with tf.Session() as sess:
                 if k*batch_size % 100 == 0 or k*batch_size == 1:
                     loss2 = sess.run(l2, feed_dict={input_0: mini_batch_x, output: mini_batch_u})
                     print ("epoch " + str(epoch)+ " loss2: " + str(loss2))            
-        pre_value2 = sess.run(pred2, {input_0: testD})
+    pre_value2 = sess.run(pred2, {input_0: testD})
 
 x_plot1 = np.arange(-0.5, 0.1, 0.01)
 x_plot2 = np.arange(-0.15, 0.1, 0.01)
@@ -192,28 +191,24 @@ x_plot2 = np.arange(-0.15, 0.1, 0.01)
 # ax4.set_ylabel('test data')
 f1 = plt.figure()
 ax1 = f1.add_subplot(111)
+plt.title("Predict u vs True u")
 ax1.plot(x_plot1,x_plot1, color='black')
-ax1.scatter(pre_value[:,0], testL[:,0],label="Predict u vs True u")
-ax1.legend("No Constraint")
+ax1.scatter(pre_value[:,0], testL[:,0],label="No Constraint")
+ax1.legend()
 ax1.set_xlabel('predict data')
 ax1.set_ylabel('test data')
 ax3 = f1.add_subplot(111)
-ax3.plot(x_plot1,x_plot1, color='orange')
-ax3.scatter(pre_value2[:,0], testL[:,0],label="Predict u vs True u")
-ax3.legend("With Constraint")
-ax3.set_xlabel('predict data')
-ax3.set_ylabel('test data')
+ax3.scatter(pre_value2[:,0], testL[:,0],label="With Constraint")
+ax3.legend()
 f2 = plt.figure()
+plt.title("Predict k vs True k")
 ax2 = f2.add_subplot(111)
 ax2.plot(x_plot2,x_plot2, color='black')
-ax2.scatter(pre_value[:,1], testL[:,1],label="Predict k vs True k")
+ax2.scatter(pre_value[:,1], testL[:,1],label="No Constraint")
 ax2.legend()
 ax2.set_xlabel('predict data')
 ax2.set_ylabel('test data')
 ax4 = f2.add_subplot(111)
-ax4.plot(x_plot2,x_plot2, color='orange')
-ax4.scatter(pre_value2[:,1], testL[:,1],label="Predict k vs True k")
+ax4.scatter(pre_value2[:,1], testL[:,1],label="With Constraint")
 ax4.legend()
-ax4.set_xlabel('predict data')
-ax4.set_ylabel('test data')
 plt.show()
