@@ -64,10 +64,10 @@ def L2Regluarize(weights):
     return L2_reg
 
 #layers = [1, 5, 5, 5,1]
-# layers = [2, 100,100,100, 2] 
-# layers2 =[2, 100,100,100, 2] 
-layers = [2, 100, 2] 
-layers2 =[2, 100, 2] 
+layers = [2, 100,100,100, 2] 
+layers2 =[2, 100,100,100, 2] 
+# layers = [2, 40,40, 2] 
+# layers2 =[2, 40,40, 2] 
 #layers2 =[1,40, 40, 40, 1]
 #layers = [1, 400, 400, 200, 200, 100, 1]
 
@@ -75,7 +75,7 @@ layers2 =[2, 100, 2]
 trainD, validateD, testD, trainL, validateL, testL = load_data(10000)
 #small size data points
 #trainD_t1, validateD_t1, testD_t1, trainL_t1, validateL_t1, testL_t1 = load_data(2000)
-trainD_t1, validateD_t1, testD_t1, trainL_t1, validateL_t1, testL_t1 = load_data(500)
+trainD_t1, validateD_t1, testD_t1, trainL_t1, validateL_t1, testL_t1 = load_data(5000)
 # define variables and functions for large size data
 weights, biases = initialize_NN(layers)
 weights2, biases2 = initialize_NN(layers2)
@@ -132,7 +132,7 @@ l2 = tf.reduce_mean(tf.square(output - pred2) + lossL2_2+ 0.0001*loss_constraint
 
 #Loss function of small size data
 l1_t1 = tf.reduce_mean(tf.square(output - pred_t1) + lossL2_t1)
-l2_t1 = tf.reduce_mean(tf.square(output - pred2_t1) + lossL2_2_t1+ 0.0002*loss_constraint_t1)
+l2_t1 = tf.reduce_mean(tf.square(output - pred2_t1) + lossL2_2_t1+ 0.0001*loss_constraint_t1)
 
 #l2 =  tf.reduce_mean(tf.square(m-m_pred))
 #loss = tf.reduce_mean(tf.square(u - u_pred)+tf.square(m-m_pred))
@@ -161,7 +161,7 @@ loss2_t1 = 10
 loss_terminate = 0.00002
 #batch_size = 50
 
-epochs = 5000
+epochs = 2000
 batch_size = 100
 
 n = len(trainD)
@@ -205,6 +205,8 @@ with tf.Session() as sess:
 
 UL2loss =np.sum(np.square(pre_value[:,0] - testL[:,0]))
 KL2loss =np.sum(np.square(pre_value[:,1] - testL[:,1]))
+Ustd =np.std(pre_value[:,0])
+Kstd =np.std(pre_value[:,1])
 
 with tf.Session() as sess:
     sess.run(init)
@@ -233,6 +235,9 @@ with tf.Session() as sess:
 UL2loss2 =np.sum(np.square(pre_value2[:,0] - testL[:,0]))
 KL2loss2 =np.sum(np.square(pre_value2[:,1] - testL[:,1]))
 
+Ustd2 =np.std(pre_value2[:,0])
+Kstd2 =np.std(pre_value2[:,1])
+
 #Train for small size data
 with tf.Session() as sess:
     sess.run(init)
@@ -255,10 +260,13 @@ with tf.Session() as sess:
                 loss1_t1 = sess.run(l1_t1, feed_dict={input_0: mini_batch_x, output: mini_batch_u})
                 print ("epoch " + str(epoch)+ " iterator " + str(int(iterator/100)) + " loss1_t1: " + str(loss1_t1))
 
-    pre_value_t1 = sess.run(pred_t1, {input_0: testD})
+    pre_value_t1 = sess.run(pred_t1, {input_0: testD_t1})
 
-UL2loss_t1 =np.sum(np.square(pre_value_t1[:,0] - testL[:,0]))
-KL2loss_t1 =np.sum(np.square(pre_value_t1[:,1] - testL[:,1]))
+UL2loss_t1 =np.sum(np.square(pre_value_t1[:,0] - testL_t1[:,0]))
+KL2loss_t1 =np.sum(np.square(pre_value_t1[:,1] - testL_t1[:,1]))
+
+Ustd_t1 =np.std(pre_value_t1[:,0])
+Kstd_t1 =np.std(pre_value_t1[:,1])
 
 with tf.Session() as sess:
     sess.run(init)
@@ -280,11 +288,13 @@ with tf.Session() as sess:
                 
                 loss2_t1 = sess.run(l2_t1, feed_dict={input_0: mini_batch_x, output: mini_batch_u})
                 print ("epoch " + str(epoch)+ " iterator " + str(int(iterator/100)) + " loss2_t1: " + str(loss2_t1))            
-    pre_value2_t1 = sess.run(pred2_t1, {input_0: testD})
+    pre_value2_t1 = sess.run(pred2_t1, {input_0: testD_t1})
 
-UL2loss2_t1 =np.sum(np.square(pre_value2_t1[:,0] - testL[:,0]))
-KL2loss2_t1 =np.sum(np.square(pre_value2_t1[:,1] - testL[:,1]))
+UL2loss2_t1 =np.sum(np.square(pre_value2_t1[:,0] - testL_t1[:,0]))
+KL2loss2_t1 =np.sum(np.square(pre_value2_t1[:,1] - testL_t1[:,1]))
 
+Ustd2_t1 =np.std(pre_value2_t1[:,0])
+Kstd2_t1 =np.std(pre_value2_t1[:,1])
 
 x_plot1 = np.arange(-0.5, 0.1, 0.01)
 x_plot2 = np.arange(-0.15, 0.1, 0.01)
@@ -316,6 +326,7 @@ x_plot2 = np.arange(-0.15, 0.1, 0.01)
 # ax4.legend()
 # ax4.set_xlabel('predict data')
 # ax4.set_ylabel('test data')
+#Print L2 loss
 print("U and K loss for large size data")
 print("UL2loss: " + str(UL2loss))
 print("KL2loss: " + str(KL2loss))
@@ -329,6 +340,21 @@ print("KL2loss_t1: " + str(KL2loss_t1))
 
 print("UL2loss2_t1: " + str(UL2loss2_t1))
 print("KL2loss2_t1: " + str(KL2loss2_t1))
+
+#Prit Std
+print("U and K std for large size data")
+print("Ustd: " + str(Ustd))
+print("Kstd: " + str(Kstd))
+
+print("Ustd2: " + str(Ustd2))
+print("Kstd2: " + str(Kstd2))
+
+print("U and K loss for small size data")
+print("Ustd_t1: " + str(Ustd_t1))
+print("Kstd_t1: " + str(Kstd_t1))
+
+print("Ustd2_t1: " + str(Ustd2_t1))
+print("Kstd2_t1: " + str(Kstd2_t1))
 
 print(len(iter_plot))
 print(len(iter2_plot))
@@ -364,24 +390,24 @@ ax2.legend()
 f_loss = plt.figure()
 ax_loss = f_loss.add_subplot(111)
 plt.title("Loss vs Epoch of large size data")
-ax_loss.plot(iter_plot[5:-1], loss1_plot[5:-1],label="No Constraint")
+ax_loss.plot(iter_plot[2:-1], loss1_plot[2:-1],label="No Constraint")
 ax_loss.legend()
 ax_loss.set_xlabel('Epoch')
 ax_loss.set_ylabel('Loss')
 ax_loss2 = f_loss.add_subplot(111)
-ax_loss2.plot(iter2_plot[5:-1], loss2_plot[5:-1],label="With Constraint")
+ax_loss2.plot(iter2_plot[2:-1], loss2_plot[2:-1],label="With Constraint")
 ax_loss2.legend()
 
 #Plot of small data loss
 f_loss_t1 = plt.figure()
 ax_loss_t1 = f_loss_t1.add_subplot(111)
 plt.title("Loss vs Epoch of small size data")
-ax_loss_t1.plot(iter_t1_plot[5:-1], loss1_t1_plot[5:-1],label="No Constraint")
+ax_loss_t1.plot(iter_t1_plot[2:-1], loss1_t1_plot[2:-1],label="No Constraint")
 ax_loss_t1.legend()
 ax_loss_t1.set_xlabel('Epoch')
 ax_loss_t1.set_ylabel('Loss')
 ax_loss2_t1 = f_loss_t1.add_subplot(111)
-ax_loss2_t1.plot(iter2_t1_plot[5:-1], loss2_t1_plot[5:-1],label="With Constraint")
+ax_loss2_t1.plot(iter2_t1_plot[2:-1], loss2_t1_plot[2:-1],label="With Constraint")
 ax_loss2_t1.legend()
 
 #Plot of small size data
@@ -389,23 +415,24 @@ f3 = plt.figure()
 ax3 = f3.add_subplot(111)
 plt.title("Predict u vs True u (Small Data)")
 ax3.plot(x_plot1,x_plot1, color='black')
-ax3.scatter(pre_value_t1[:,0], testL[:,0],label="No Constraint")
+ax3.scatter(pre_value_t1[:,0], testL_t1[:,0],label="No Constraint")
 ax3.legend()
 ax3.set_xlabel('predict data')
 ax3.set_ylabel('test data')
 ax3 = f3.add_subplot(111)
-ax3.scatter(pre_value2_t1[:,0], testL[:,0],label="With Constraint")
+ax3.scatter(pre_value2_t1[:,0], testL_t1[:,0],label="With Constraint")
 ax3.legend()
 
 f4 = plt.figure()
 plt.title("Predict k vs True k (Small Data)")
 ax4 = f4.add_subplot(111)
 ax4.plot(x_plot2,x_plot2, color='black')
-ax4.scatter(pre_value_t1[:,1], testL[:,1],label="No Constraint")
+ax4.scatter(pre_value_t1[:,1], testL_t1[:,1],label="No Constraint")
 ax4.legend()
 ax4.set_xlabel('predict data')
 ax4.set_ylabel('test data')
 ax4 = f4.add_subplot(111)
-ax4.scatter(pre_value2_t1[:,1], testL[:,1],label="With Constraint")
+ax4.scatter(pre_value2_t1[:,1], testL_t1[:,1],label="With Constraint")
 ax4.legend()
+
 plt.show()
