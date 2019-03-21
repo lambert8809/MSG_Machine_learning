@@ -11,8 +11,8 @@ def initialize_NN(layers):
     biases = []
     num_layers = len(layers) 
     for l in range(0,num_layers-1):
-        W = tf.Variable(tf.random_normal([layers[l], layers[l+1]], dtype=tf.float32), dtype=tf.float32)
-        b = tf.Variable(tf.zeros([1,layers[l+1]], dtype=tf.float32), dtype=tf.float32)
+        W = tf.Variable(tf.random_normal([layers[l], layers[l+1]], dtype=tf.float64), dtype=tf.float64)
+        b = tf.Variable(tf.zeros([1,layers[l+1]], dtype=tf.float64), dtype=tf.float64)
         weights.append(W)
         biases.append(b)        
     return weights, biases
@@ -64,6 +64,8 @@ def L2Regluarize(weights):
     return L2_reg
 
 #layers = [1, 5, 5, 5,1]
+# layers = [2, 100,100,100, 2] 
+# layers2 =[2, 100,100,100, 2] 
 layers = [2, 100,100,100, 2] 
 layers2 =[2, 100,100,100, 2] 
 # layers = [2, 40,40, 2] 
@@ -75,7 +77,7 @@ layers2 =[2, 100,100,100, 2]
 trainD, validateD, testD, trainL, validateL, testL = load_data(10000)
 #small size data points
 #trainD_t1, validateD_t1, testD_t1, trainL_t1, validateL_t1, testL_t1 = load_data(2000)
-trainD_t1, validateD_t1, testD_t1, trainL_t1, validateL_t1, testL_t1 = load_data(5000)
+trainD_t1, validateD_t1, testD_t1, trainL_t1, validateL_t1, testL_t1 = load_data(3000)
 # define variables and functions for large size data
 weights, biases = initialize_NN(layers)
 weights2, biases2 = initialize_NN(layers2)
@@ -84,8 +86,8 @@ weights2, biases2 = initialize_NN(layers2)
 weights_t1, biases_t1 = initialize_NN(layers)
 weights2_t1, biases2_t1 = initialize_NN(layers2)
 
-input_0 = tf.placeholder(tf.float32,shape=[None,2])
-output = tf.placeholder(tf.float32,shape=[None,2])
+input_0 = tf.placeholder(tf.float64,shape=[None,2])
+output = tf.placeholder(tf.float64,shape=[None,2])
 
 #Predict value of large size data
 pred = net_u(input_0,weights,biases)
@@ -161,7 +163,7 @@ loss2_t1 = 10
 loss_terminate = 0.00002
 #batch_size = 50
 
-epochs = 2000
+epochs = 3000
 batch_size = 100
 
 n = len(trainD)
@@ -198,8 +200,8 @@ with tf.Session() as sess:
                 sess.run(train_op1, feed_dict={input_0: mini_batch_x, output: mini_batch_u})
                 
                 loss1 = sess.run(l1, feed_dict={input_0: mini_batch_x, output: mini_batch_u})
-
-                print ("epoch " + str(epoch)+ " iterator " + str(int(iterator/100)) + " loss1: " + str(loss1))
+                if iterator % 1000 == 0:
+                    print ("epoch " + str(epoch)+ " iterate " + str(int(iterator/100)) + " loss1: " + str(loss1))
 
     pre_value = sess.run(pred, {input_0: testD})
 
@@ -228,8 +230,8 @@ with tf.Session() as sess:
                 sess.run(train_op2, feed_dict={input_0: mini_batch_x, output: mini_batch_u})
                 
                 loss2 = sess.run(l2, feed_dict={input_0: mini_batch_x, output: mini_batch_u})
-
-                print ("epoch " + str(epoch) + " iterator " + str(int(iterator/100)) + " loss2: " + str(loss2))            
+                if iterator % 1000 == 0:
+                    print ("epoch " + str(epoch) + " iterate " + str(int(iterator/100)) + " loss2: " + str(loss2))            
         pre_value2 = sess.run(pred2, {input_0: testD})
 
 UL2loss2 =np.sum(np.square(pre_value2[:,0] - testL[:,0]))
@@ -258,7 +260,9 @@ with tf.Session() as sess:
                 sess.run(train_op1_t1, feed_dict={input_0: mini_batch_x, output: mini_batch_u})
                 
                 loss1_t1 = sess.run(l1_t1, feed_dict={input_0: mini_batch_x, output: mini_batch_u})
-                print ("epoch " + str(epoch)+ " iterator " + str(int(iterator/100)) + " loss1_t1: " + str(loss1_t1))
+
+                if iterator % 1000 == 0:
+                    print ("epoch " + str(epoch)+ " iterate " + str(int(iterator/100)) + " loss1_t1: " + str(loss1_t1))
 
     pre_value_t1 = sess.run(pred_t1, {input_0: testD_t1})
 
@@ -287,7 +291,8 @@ with tf.Session() as sess:
                 sess.run(train_op2_t1, feed_dict={input_0: mini_batch_x, output: mini_batch_u})
                 
                 loss2_t1 = sess.run(l2_t1, feed_dict={input_0: mini_batch_x, output: mini_batch_u})
-                print ("epoch " + str(epoch)+ " iterator " + str(int(iterator/100)) + " loss2_t1: " + str(loss2_t1))            
+                if iterator % 1000 == 0:
+                    print ("epoch " + str(epoch)+ " iterate " + str(int(iterator/100)) + " loss2_t1: " + str(loss2_t1))            
     pre_value2_t1 = sess.run(pred2_t1, {input_0: testD_t1})
 
 UL2loss2_t1 =np.sum(np.square(pre_value2_t1[:,0] - testL_t1[:,0]))
@@ -356,8 +361,8 @@ print("Kstd_t1: " + str(Kstd_t1))
 print("Ustd2_t1: " + str(Ustd2_t1))
 print("Kstd2_t1: " + str(Kstd2_t1))
 
-print(len(iter_plot))
-print(len(iter2_plot))
+print(len(testD))
+print(len(testD_t1))
 #print(iter2_plot)
 #Plot of large size data
 f1 = plt.figure()
